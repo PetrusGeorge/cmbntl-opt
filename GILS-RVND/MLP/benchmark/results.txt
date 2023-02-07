@@ -1,0 +1,70 @@
+Benchmark running on a i5 10210u, each instance was executed 10 times, the results below are an avarege.
+
+INSTANCE NAME
+EXECUTION TIME / RESULT
+
+att48.tsp
+1.76096 209320
+
+berlin52.tsp
+2.16563 143721
+
+brazil58.tsp
+4.10109 512361
+
+dantzig42.tsp
+1.14353 12528
+
+eil101.tsp
+43.3546 27522.6
+
+eil51.tsp
+2.42772 10209.5
+
+eil76.tsp
+11.7224 17976
+
+gr48.tsp
+1.89737 102378
+
+gr96.tsp
+22.4608 2.09717e+06
+
+hk48.tsp
+1.80589 247926
+
+kroA100.tsp
+28.1242 983128
+
+kroB100.tsp
+27.6239 986008
+
+kroC100.tsp
+33.4629 961324
+
+kroD100.tsp
+30.2671 976965
+
+kroE100.tsp
+26.5812 971266
+
+lin105.tsp
+28.9205 603910
+
+pr107.tsp
+40.94 2.02663e+06
+
+pr76.tsp
+11.0308 3.45524e+06
+
+rat99.tsp
+42.4166 57986
+
+rd100.tsp
+30.5814 340047
+
+st70.tsp
+7.36861 20557
+
+swiss42.tsp
+1.27791 22327
