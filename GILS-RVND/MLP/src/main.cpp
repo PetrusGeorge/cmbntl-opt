@@ -725,7 +725,7 @@ int main(int argc, char** argv){
 
     sumCost /= 10;
 
-    cout << (time.count()) << " " << sumCost << "\n\n";
+    cout << (time.count())/10 << " " << sumCost << "\n\n";
     
     return 0;
 }
