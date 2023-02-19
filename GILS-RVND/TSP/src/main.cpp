@@ -593,7 +593,7 @@ Solution ILS(int maxIter, int maxIterILS, Data& data){
 
 int main(int argc, char** argv) {
  
-	chrono::time_point<std::chrono::system_clock> start, end;
+    chrono::time_point<std::chrono::system_clock> start, end;
     srand((unsigned) time(NULL));
     Solution result;
     int maxIterILS;
@@ -601,7 +601,7 @@ int main(int argc, char** argv) {
 
     auto data = Data(argc, argv[1]);
     data.read();
-    size_t dimension = data.getDimension();
+    dimension = data.getDimension();
 
     
     for(int i = 0; i < dimension - 1; i++){
