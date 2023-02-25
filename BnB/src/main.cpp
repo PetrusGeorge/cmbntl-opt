@@ -1,13 +1,13 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
+#include <queue>
 #include "Data.h"
 #include "hungarian.h"
 
 using namespace std;
 
 int dimension;
-//Candidate vertex for random choices
 vector<int> CLFix;
 
 typedef struct Node{
@@ -17,6 +17,12 @@ typedef struct Node{
 	double lowerBound;
 	int chosen;
 	bool feasible;
+
+    bool operator< (const Node& next) const{
+
+        return lowerBound > next.lowerBound;
+    }
+    
 
 }Node;
 
@@ -87,10 +93,11 @@ int findSmallestSubtour(vector<vector<int>> subtour){
     return smallestIndex;
 }
 
-Node bnb(double **cost){
+Node bnb(double **cost, int mode){
 
     Node root, bestNode;
     vector<Node> tree;
+    priority_queue<Node> pqTree;
     
     double **fluidCost = new double*[dimension];
 
@@ -114,19 +121,50 @@ Node bnb(double **cost){
     root.feasible = root.subtour.size() == 1;
     root.chosen = findSmallestSubtour(root.subtour);
 
-    tree.push_back(root);
+    switch(mode){
 
+        case 1:
+        case 2:
+
+            tree.push_back(root);
+            break;
+        
+        case 3:
+
+            pqTree.push(root);
+            break;
+    }
+    
     hungarian_free(&h);
     
-    while(!tree.empty()){
+    while(!tree.empty() || !pqTree.empty()){
 
         Node node;
-        node = tree.back();
-        tree.erase(tree.end());
+
+        switch(mode){
+
+            case 1:
+            
+                node = tree.front();
+                tree.erase(tree.begin());
+                break;
+
+            case 2:
+
+                node = tree.back();
+                tree.erase(tree.end());
+                break;
+            
+            case 3:
+
+                node = pqTree.top();
+                pqTree.pop();
+                break;
+        }
 
         if(node.feasible){
 
-            if(node.lowerBound <= upperBound){
+            if(node.lowerBound < upperBound){
                 
                 upperBound = node.lowerBound;
                 bestNode = node;
@@ -141,8 +179,7 @@ Node bnb(double **cost){
             Node n;
             n.forbiddenArcs = node.forbiddenArcs;
 
-            pair<int, int> forbiddenArc = {node.subtour[node.chosen][i], node.subtour[node.chosen][i + 1]
-            };
+            pair<int, int> forbiddenArc = {node.subtour[node.chosen][i], node.subtour[node.chosen][i + 1]};
 
             n.forbiddenArcs.push_back(forbiddenArc);
 
@@ -165,13 +202,25 @@ Node bnb(double **cost){
 
             n.lowerBound = hungarian_solve(&h2);
             
-            if(n.lowerBound <= upperBound ){
+            if(n.lowerBound < upperBound){
 
                 n.subtour = findSubtour(&h2);
                 n.feasible = n.subtour.size() == 1;
                 n.chosen = findSmallestSubtour(n.subtour);
 
-                tree.push_back(n);
+                switch(mode){
+            
+                    case 1:
+                    case 2:
+                     
+                        tree.push_back(n);
+                        break;
+                    
+                    case 3:
+
+                        pqTree.push(n);    
+                        break;
+                }
             }
             
             hungarian_free(&h2);        
@@ -184,12 +233,13 @@ Node bnb(double **cost){
     return bestNode;
 }
 
-
 int main(int argc, char** argv){
 	
 	chrono::time_point<std::chrono::system_clock> start, end;
 
 	Node result;
+
+    int mode;
 	
 	Data * data = new Data(argc, argv[1]);
 	data->read();
@@ -216,9 +266,13 @@ int main(int argc, char** argv){
 
         cost[i][i] = 1000000000;
     }
-    
+
+    cout << "Choose mode" << endl << endl <<"Breadth 1" << endl << "Depth 2" << endl << "Best Bound 3" << endl;
+
+    cin >> mode;
+
     start = chrono::system_clock::now();    
-    result = bnb(cost);
+    result = bnb(cost, mode);
     end = chrono::system_clock::now();    
  
 	chrono::duration<double> time = end - start;
