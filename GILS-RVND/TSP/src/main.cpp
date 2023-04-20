@@ -5,6 +5,7 @@
 #include <math.h>
 #include <time.h>
 #include <chrono>
+#include <thread>
 
 using namespace std;
 
@@ -14,7 +15,8 @@ using namespace std;
 int dimension;
 //Candidate vertex for random choices
 vector<int> CLFix;
-vector<int> CL;
+
+auto nThreads = thread::hardware_concurrency();
 
 typedef struct Solution{
     
@@ -31,7 +33,7 @@ typedef struct Insertion{
     
 }Insertion;
 
-Solution chooseRandom(Data& data){
+Solution chooseRandom(Data& data, vector<int> CL){
 
     Solution choice {{1},0};
 
@@ -55,7 +57,7 @@ Solution chooseRandom(Data& data){
     return choice;
 }
 
-vector<Insertion> calculateInsertionCost(const Solution *subTour, Data& data){
+vector<Insertion> calculateInsertionCost(const Solution *subTour, Data& data, vector<int> CL){
     
     vector<Insertion> insertionCost((subTour->sequence.size() - 1) * CL.size());
     
@@ -82,7 +84,7 @@ bool compare(Insertion x, Insertion y){
     return x.delta < y.delta;
 }
 
-void insertRandom(Solution *incompleteSolution, vector<Insertion> list){
+void insertRandom(Solution *incompleteSolution, vector<Insertion> list, vector<int> CL){
     
     double alpha = ((double) rand() / RAND_MAX) + 0.00001;
     int chose = rand() % ((int) ceil(alpha * list.size()));
@@ -99,24 +101,24 @@ void insertRandom(Solution *incompleteSolution, vector<Insertion> list){
     }
 }
 
-Solution construction(Data& data){
+void construction(Data& data, Solution *receiver){
  
     //reset candidate vertices
-    CL = CLFix;
+    vector<int> CL = CLFix;
     Solution s;
     
-    s = chooseRandom(data);
+    s = chooseRandom(data, CL);
 
     while(!CL.empty()){
         
-        vector<Insertion> insertionCost = calculateInsertionCost(&s, data);
+        vector<Insertion> insertionCost = calculateInsertionCost(&s, data, CL);
 
         sort(insertionCost.begin(), insertionCost.end(), compare);
 
-        insertRandom(&s, insertionCost);
+        insertRandom(&s, insertionCost, CL);
     }
     
-    return s;
+    *receiver = s;
 }
 
 bool bestSwap(Solution *s, Data& data){
@@ -556,28 +558,59 @@ void Pertubacao(const Solution *s, Solution *receiver, Data& data){
     receiver->total = delta + s->total;  
 }
 
+void joinAllThreads(thread t[]){
+
+    for(int i = 0; i < nThreads; i++){
+
+        t[i].join();
+    }
+}
+
 Solution ILS(int maxIter, int maxIterILS, Data& data){
     
     Solution bestOfAll;
     bestOfAll.total = INFINITY;
     
     for(int i = 0; i < maxIter; i++){
-        
-        Solution now = construction(data); 
-        Solution bestNow = now;
+
+        thread t[nThreads];        
+        Solution now[nThreads];
+
+        for(int i = 0; i < nThreads; i++){
+
+            t[i] = thread(construction, ref(data), &now[i]);
+        }
+
+        joinAllThreads(t);
+
+        Solution bestNow = now[0];
         
         int ls = 0;
         
         while(ls <= maxIterILS){
-            localSearch(&now, data);
 
-            if(now.total < bestNow.total){
-                
-                bestNow = now;
-                ls = 0;
+            for(int i = 0; i < nThreads; i++){
+                t[i] = thread(localSearch, &now[i], ref(data));
             }
-            
-            Pertubacao(&bestNow, &now, data);
+
+            joinAllThreads(t);
+
+            for(int i = 0; i < nThreads; i++){
+             
+                if(now[i].total < bestNow.total){
+                    
+                    bestNow = now[i];
+                    ls = 0;
+                }
+            }
+
+            for(int i = 0; i < nThreads; i++){
+             
+                t[i] = thread(Pertubacao, &bestNow, &now[i], ref(data));
+            }
+
+            joinAllThreads(t);
+
             ls++;
         }
         
@@ -610,25 +643,25 @@ int main(int argc, char** argv) {
     }
 
     if(dimension < 150){
-        maxIterILS = dimension;
+        maxIterILS = dimension/nThreads;
     }
     else{
-        maxIterILS = dimension / 2;
+        maxIterILS = dimension / (2*nThreads);
     }
 
     start = chrono::system_clock::now();
    
-    for(int i = 0; i < 10; i++){
+    for(int i = 0; i < 1; i++){
 
-            result = ILS(50, maxIterILS, data);
-            sumCost += result.total; 
+        result = ILS(50, maxIterILS, data);
+        sumCost += result.total; 
     }
 	
     end = chrono::system_clock::now();
  
 	chrono::duration<double> time = end - start;
 
-    cout << (time.count())/10 << " " << sumCost/10 << "\n\n";
+    cout << (time.count())/1 << " " << sumCost/1 << "\n\n";
     
     return 0;
 }
