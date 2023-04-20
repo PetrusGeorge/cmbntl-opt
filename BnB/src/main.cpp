@@ -21,9 +21,7 @@ typedef struct Node{
     bool operator< (const Node& next) const{
 
         return lowerBound > next.lowerBound;
-    }
-    
-
+    }    
 }Node;
 
 vector<vector<int>> findSubtour(hungarian_problem_t *h){
@@ -72,7 +70,6 @@ vector<vector<int>> findSubtour(hungarian_problem_t *h){
         currentSubtour.clear();
     }
 
-
     return subtours;
 }
 
@@ -93,9 +90,9 @@ int findSmallestSubtour(vector<vector<int>> subtour){
     return smallestIndex;
 }
 
-Node bnb(double **cost, int mode){
+double bnb(double **cost, const int mode, const double heuristic){
 
-    Node root, bestNode;
+    Node root;
     vector<Node> tree;
     priority_queue<Node> pqTree;
     
@@ -112,9 +109,19 @@ Node bnb(double **cost, int mode){
     }
 
     hungarian_problem_t h;
-    hungarian_init(&h,cost, dimension, dimension, HUNGARIAN_MODE_MINIMIZE_COST);
+    hungarian_init(&h, cost, dimension, dimension, HUNGARIAN_MODE_MINIMIZE_COST);
 
-    double upperBound = 1000000000;
+    double upperBound, bestResult = -1;
+
+    if(heuristic <= 0){
+    
+        upperBound = 1000000000;
+    }
+
+    else{
+
+        upperBound = heuristic;
+    }
 
     root.lowerBound = hungarian_solve(&h);
     root.subtour = findSubtour(&h);
@@ -164,10 +171,10 @@ Node bnb(double **cost, int mode){
 
         if(node.feasible){
 
-            if(node.lowerBound < upperBound){
+            if(node.lowerBound <= upperBound){
                 
                 upperBound = node.lowerBound;
-                bestNode = node;
+                bestResult = node.lowerBound;
             }
 
             continue;
@@ -202,7 +209,7 @@ Node bnb(double **cost, int mode){
 
             n.lowerBound = hungarian_solve(&h2);
             
-            if(n.lowerBound < upperBound){
+            if(n.lowerBound <= upperBound){
 
                 n.subtour = findSubtour(&h2);
                 n.feasible = n.subtour.size() == 1;
@@ -230,17 +237,16 @@ Node bnb(double **cost, int mode){
     for(int i = 0; i < dimension; i++) delete [] fluidCost[i];
     delete [] fluidCost;
 
-    return bestNode;
+    return bestResult;
 }
 
 int main(int argc, char** argv){
 	
 	chrono::time_point<std::chrono::system_clock> start, end;
 
-	Node result;
-
     int mode;
-	
+    double heuristic, result;
+
 	Data * data = new Data(argc, argv[1]);
 	data->read();
 	dimension = data->getDimension();
@@ -267,18 +273,27 @@ int main(int argc, char** argv){
         cost[i][i] = 1000000000;
     }
 
-    cout << "Choose mode" << endl << endl <<"Breadth 1" << endl << "Depth 2" << endl << "Best Bound 3" << endl;
-
+    cout << "Choose mode\n\n" <<"Breadth 1\n" << "Depth 2\n" << "Best Bound 3" << endl;
     cin >> mode;
+    cout << "\nPut an heuristic result of the instance (put 0 to ignore)" << endl;
+    cin >> heuristic;
 
     start = chrono::system_clock::now();    
-    result = bnb(cost, mode);
+    result = bnb(cost, mode, heuristic);
     end = chrono::system_clock::now();    
  
 	chrono::duration<double> time = end - start;
 
-    cout << time.count() << " " << result.lowerBound << endl;
-    
+    if(result == -1){
+
+        cout << time.count() << " " << "N/A" << endl;
+    }
+
+    else{
+     
+        cout << time.count() << " " << result << endl;
+    }
+
 	for (int i = 0; i < dimension; i++) delete [] cost[i];
 	delete [] cost;
 	delete data;
