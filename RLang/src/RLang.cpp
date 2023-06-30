@@ -14,12 +14,11 @@ vvi teste = {{0,30,26,50,40},
 
 void setOriginalCostMatrix(vvi *matrix, Data *data){
 
-
-	for(int i = 0; i < data->getDimension(); i++){
+	for(int i = 1; i <= data->getDimension(); i++){
 
 		vector<double> aux;
 		
-		for(int j = 0; j < data->getDimension(); j++){
+		for(int j = 1; j <= data->getDimension(); j++){
 
 			aux.push_back(data->getDistance(i,j));
 		}
@@ -33,8 +32,9 @@ void setRelaxedCostMatrix(vvi *matrix, vector<double> *lambdas){
 	for(int i = 0; i < matrix->size(); i++){
 
 		for(int j = 0; j < matrix->size(); j++){
-
-			(*matrix)[i][j] -= (*lambdas)[i] + (*lambdas)[j];
+			if(i != j){
+				(*matrix)[i][j] -= (*lambdas)[i] + (*lambdas)[j];
+			}
 		}
 	}
 
@@ -138,18 +138,17 @@ vector<int> calculateSubGradient(vector<vector<bool>> solution){
 int main(int argc, char** argv){
 
 
-	Data * data = new Data(argc, argv[1]);
+	Data *data = new Data(argc, argv[1]);
 	data->read();
 
-	vvi *distanceMatrix = &teste; //original matrix
+	vvi *distanceMatrix = new vvi; //original matrix
+
+	setOriginalCostMatrix(distanceMatrix, data);
 
 	vector<double> lambdas(distanceMatrix->size(), 0);
 	vector<double> bestLambdas = lambdas;
-	int iterations = 0, eps = 1;
-	double bestCost = 0, upperBound = 148;
-
-	int i = 0;
-
+	int iterations = 0;
+	double bestCost = 0, upperBound = 2020, eps = 1;
 
 	while(eps > 5e-4){
 
@@ -169,9 +168,8 @@ int main(int argc, char** argv){
 		}
 
 		Kruskal tree(removeFirstNode(relaxedCost)); //Minimal spanning Tree solver
-		
-		cost = tree.MST(teste.size()) + (2* sumArray(&lambdas));
-		
+		cost = tree.MST(relaxedCost.size()) + (2* sumArray(&lambdas));
+
 		vector<vector<bool>> solution = insertInitialPoint(tree.getEdges(), &relaxedCost);
 
 		for(int i = 1; i < solution[0].size(); i++){
@@ -191,7 +189,6 @@ int main(int argc, char** argv){
 			iterations = 0;
 		}
 
-
 		else{
 
 			iterations++;
@@ -201,6 +198,8 @@ int main(int argc, char** argv){
 				eps /= 2;
 			}
 		}
+		cout << "EPS:" << eps << endl;
+
 		for(auto p : solution){
 
 			for(auto a : p){
@@ -219,13 +218,20 @@ int main(int argc, char** argv){
 		
 		double mi;
 
-	
 		int sumSubGradient = 0;
 
 		for(auto s : subGradient){
 
 			sumSubGradient += pow(s,2);
 		}
+
+		if(sumSubGradient == 0){
+	
+			bestCost = cost;
+			bestLambdas = lambdas;
+			break;
+		}
+		
 		mi = (eps*(upperBound - cost))/ sumSubGradient;
 
 		cout << "Mi:" << mi << endl;
