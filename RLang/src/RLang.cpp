@@ -6,11 +6,10 @@
 
 #define MAXITERATIONS 30
 
-vvi teste = {{0,30,26,50,40},
-			 {30,0,24,40,50},
-			 {26,24,0,24,26},
-		 	 {50,40,24,0,30},
-		 	 {40,50,26,30,0}};
+typedef struct Rlang{
+
+
+}Rlang;
 
 void setOriginalCostMatrix(vvi *matrix, Data *data){
 
@@ -36,7 +35,7 @@ void setRelaxedCostMatrix(vvi *matrix, vector<double> *lambdas){
 				(*matrix)[i][j] -= (*lambdas)[i] + (*lambdas)[j];
 			}
 		}
-	}
+	}//change matrix cost based on lambdas
 
 }
 
@@ -47,7 +46,7 @@ vvi removeFirstNode(vvi matrix){
 	for(auto& k : matrix){
 
 		k.erase(k.begin());
-	}
+	}//Makes a distance matrix without node 0
 
 	return matrix;
 }
@@ -80,11 +79,12 @@ vector<vector<bool>> insertInitialPoint(vii noInitialSolution, vvi *cost){
 	}
 
 	finalSolution[lowerIndex][0] = finalSolution[0][lowerIndex] =
-	finalSolution[secondLowerIndex][0] = finalSolution[0][secondLowerIndex] = true;
+	finalSolution[secondLowerIndex][0] = finalSolution[0][secondLowerIndex] = true; //connects node 0 with the nearest 2 nodes
 
 	for(auto k : noInitialSolution){
 
 		finalSolution[k.first + 1][k.second + 1] = finalSolution[k.second + 1][k.first + 1] = true;
+		//changes the Kruskal method of showing the solution into a bool matrix
 	}
 
 	return finalSolution;
@@ -115,8 +115,8 @@ vector<int> calculateSubGradient(vector<vector<bool>> solution){
 		for(int j = i + 1; j < solution.size(); j++){
 
 			if(solution[i][j]){
+			
 				value--;
-				cout << "a";
 			}
 		}
 
@@ -125,10 +125,9 @@ vector<int> calculateSubGradient(vector<vector<bool>> solution){
 			if(solution[j][i]){
 
 				value--;
-				cout << "b";
 			}
 		}
-		cout << endl;
+
 		subGradient.push_back(value);
 	}
 
@@ -148,7 +147,7 @@ int main(int argc, char** argv){
 	vector<double> lambdas(distanceMatrix->size(), 0);
 	vector<double> bestLambdas = lambdas;
 	int iterations = 0;
-	double bestCost = 0, upperBound = 2020, eps = 1;
+	double bestCost = 0, upperBound = stod(argv[2]), eps = 1;
 
 	while(eps > 5e-4){
 
@@ -156,7 +155,7 @@ int main(int argc, char** argv){
 		vvi relaxedCost = *distanceMatrix;
 
 		setRelaxedCostMatrix(&relaxedCost, &lambdas);
-
+		/*
 		for(auto x : relaxedCost){
 
 			for(auto y : x){
@@ -165,13 +164,13 @@ int main(int argc, char** argv){
 			}
 
 			cout << endl;
-		}
+		}*/
 
 		Kruskal tree(removeFirstNode(relaxedCost)); //Minimal spanning Tree solver
 		cost = tree.MST(relaxedCost.size()) + (2* sumArray(&lambdas));
 
 		vector<vector<bool>> solution = insertInitialPoint(tree.getEdges(), &relaxedCost);
-
+		
 		for(int i = 1; i < solution[0].size(); i++){
 
 			if(solution[0][i]){
@@ -180,7 +179,7 @@ int main(int argc, char** argv){
 			}
 		}
 
-		cout << "Cost: " << cost << endl;
+		//cout << "Cost: " << cost << endl;
 
 		if(cost > bestCost){
 
@@ -198,8 +197,8 @@ int main(int argc, char** argv){
 				eps /= 2;
 			}
 		}
-		cout << "EPS:" << eps << endl;
-
+		//cout << "EPS:" << eps << endl;
+		/*
 		for(auto p : solution){
 
 			for(auto a : p){
@@ -208,13 +207,13 @@ int main(int argc, char** argv){
 			}
 
 			cout << endl;
-		}
+		}*/
 		vector<int> subGradient = calculateSubGradient(solution);
-
+		/*
 		for(auto s : subGradient){
 
 			cout << "Sub: " << s << endl;
-		}
+		}*/
 		
 		double mi;
 
@@ -234,20 +233,20 @@ int main(int argc, char** argv){
 		
 		mi = (eps*(upperBound - cost))/ sumSubGradient;
 
-		cout << "Mi:" << mi << endl;
+		//cout << "Mi:" << mi << endl;
 
 		for(int i = 0; i < lambdas.size(); i++){
 
 			lambdas[i] += mi * (subGradient[i]);
 		}
-
+		/*
 		for(auto l : lambdas){
 
 			cout << "Lambda: " << l << endl;
-		}
+		}*/
 
 	}
 	cout << bestCost << endl;
-	//delete distanceMatrix;
+	delete distanceMatrix;
 	delete data;
 }
