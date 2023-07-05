@@ -8,6 +8,9 @@
 
 typedef struct Rlang{
 
+	vector<vector<bool>> solution;
+	vector<double> lambdas;
+	double cost;
 
 }Rlang;
 
@@ -134,20 +137,14 @@ vector<int> calculateSubGradient(vector<vector<bool>> solution){
 	return subGradient;
 }
 
-int main(int argc, char** argv){
+void solveLagrangianRelaxation(Rlang *base, vvi *distanceMatrix, double upperBound){
 
-
-	Data *data = new Data(argc, argv[1]);
-	data->read();
-
-	vvi *distanceMatrix = new vvi; //original matrix
-
-	setOriginalCostMatrix(distanceMatrix, data);
-
-	vector<double> lambdas(distanceMatrix->size(), 0);
-	vector<double> bestLambdas = lambdas;
+	Rlang best = *base;
+	vector<double> lambdas = best.lambdas;
+	vector<vector<bool>> solution;
 	int iterations = 0;
-	double bestCost = 0, upperBound = stod(argv[2]), eps = 1;
+	double eps = 1;
+
 
 	while(eps > 5e-4){
 
@@ -167,9 +164,9 @@ int main(int argc, char** argv){
 		}*/
 
 		Kruskal tree(removeFirstNode(relaxedCost)); //Minimal spanning Tree solver
-		cost = tree.MST(relaxedCost.size()) + (2* sumArray(&lambdas));
+		cost = tree.MST(relaxedCost.size() - 1) + (2* sumArray(&lambdas));
 
-		vector<vector<bool>> solution = insertInitialPoint(tree.getEdges(), &relaxedCost);
+		solution = insertInitialPoint(tree.getEdges(), &relaxedCost);
 		
 		for(int i = 1; i < solution[0].size(); i++){
 
@@ -181,16 +178,18 @@ int main(int argc, char** argv){
 
 		//cout << "Cost: " << cost << endl;
 
-		if(cost > bestCost){
+		if(cost > best.cost){
 
-			bestCost = cost;
-			bestLambdas = lambdas;
+			best.cost = cost;
+			best.lambdas = lambdas;
+			best.solution = solution;
 			iterations = 0;
 		}
 
 		else{
 
 			iterations++;
+
 			if(iterations >= MAXITERATIONS){
 
 				iterations = 0;
@@ -226,8 +225,9 @@ int main(int argc, char** argv){
 
 		if(sumSubGradient == 0){
 	
-			bestCost = cost;
-			bestLambdas = lambdas;
+			best.cost = cost;
+			best.lambdas = lambdas;
+			best.solution = solution;
 			break;
 		}
 		
@@ -246,7 +246,26 @@ int main(int argc, char** argv){
 		}*/
 
 	}
-	cout << bestCost << endl;
+
+	*base = best;
+}
+
+int main(int argc, char** argv){
+
+	Rlang relaxation;
+	Data *data = new Data(argc, argv[1]);
+	data->read();
+
+	vvi *distanceMatrix = new vvi; //original matrix
+
+	setOriginalCostMatrix(distanceMatrix, data);
+
+	relaxation.cost = 0;
+	relaxation.lambdas = vector<double>(distanceMatrix->size(), 0);
+	
+	solveLagrangianRelaxation(&relaxation, distanceMatrix, stod(argv[2]));
+
+	cout << relaxation.cost << endl;
 	delete distanceMatrix;
 	delete data;
 }
