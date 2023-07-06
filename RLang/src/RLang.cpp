@@ -1,20 +1,11 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-#include "Data.h"
-#include "Kruskal.h"
+#include "RLang.h"
 
 #define MAXITERATIONS 30
 
-typedef struct Rlang{
-
-	vector<vector<bool>> solution;
-	vector<double> lambdas;
-	double cost;
-
-}Rlang;
-
-void setOriginalCostMatrix(vvi *matrix, Data *data){
+void setOriginalCostMatrix(vvi *const matrix, Data *const data){
 
 	for(int i = 1; i <= data->getDimension(); i++){
 
@@ -29,7 +20,7 @@ void setOriginalCostMatrix(vvi *matrix, Data *data){
 	}//read original matrix from data
 }
 
-void setRelaxedCostMatrix(vvi *matrix, vector<double> *lambdas){
+void setRelaxedCostMatrix(vvi *const matrix, const vector<double> *const lambdas){
 
 	for(int i = 0; i < matrix->size(); i++){
 
@@ -54,7 +45,7 @@ vvi removeFirstNode(vvi matrix){
 	return matrix;
 }
 
-vector<vector<bool>> insertInitialPoint(vii noInitialSolution, vvi *cost){
+vector<vector<bool>> insertInitialPoint(vii noInitialSolution, const vvi *const cost){
 
 	vector<vector<bool>> finalSolution(noInitialSolution.size() + 2, vector<bool>(noInitialSolution.size() + 2, false));
 
@@ -93,7 +84,7 @@ vector<vector<bool>> insertInitialPoint(vii noInitialSolution, vvi *cost){
 	return finalSolution;
 }
 
-double sumArray(vector<double> *array){
+double sumArray(const vector<double> * const array){
 
 	double sum = 0;
 
@@ -105,19 +96,19 @@ double sumArray(vector<double> *array){
 	return sum;
 }
 
-vector<int> calculateSubGradient(vector<vector<bool>> solution){
+vector<int> calculateSubGradient(const vector<vector<bool>> *const solution){
 
 	vector<int> subGradient;
 
 	subGradient.push_back(0);
 
-	for(int i = 1; i < solution.size(); i++){
+	for(int i = 1; i < solution->size(); i++){
 
 		int value = 2; //calculus for subgradient
 
-		for(int j = i + 1; j < solution.size(); j++){
+		for(int j = i + 1; j < solution->size(); j++){
 
-			if(solution[i][j]){
+			if((*solution)[i][j]){
 			
 				value--;
 			}
@@ -125,7 +116,7 @@ vector<int> calculateSubGradient(vector<vector<bool>> solution){
 
 		for(int j = i - 1; j >= 0; j--){
 
-			if(solution[j][i]){
+			if((*solution)[j][i]){
 
 				value--;
 			}
@@ -137,13 +128,35 @@ vector<int> calculateSubGradient(vector<vector<bool>> solution){
 	return subGradient;
 }
 
-void solveLagrangianRelaxation(Rlang *base, vvi *distanceMatrix, double upperBound){
+int totalSubGradient(const vector<int> *const subgradient){
+
+	int sum = 0;
+
+	for(auto s : *subgradient){
+
+		sum += pow(s,2);
+	}
+
+	return sum;
+}
+
+void solveLagrangianRelaxation(Rlang *const base, const vvi *const distanceMatrix, const double upperBound){
 
 	Rlang best = *base;
-	vector<double> lambdas = best.lambdas;
+	vector<double> lambdas;
 	vector<vector<bool>> solution;
 	int iterations = 0;
 	double eps = 1;
+
+	if(best.lambdas.empty()){
+
+		lambdas = vector<double>(distanceMatrix->size(), 0);
+		best.lambdas = lambdas;
+	}
+	else{
+
+		lambdas = best.lambdas;
+	}
 
 
 	while(eps > 5e-4){
@@ -152,16 +165,6 @@ void solveLagrangianRelaxation(Rlang *base, vvi *distanceMatrix, double upperBou
 		vvi relaxedCost = *distanceMatrix;
 
 		setRelaxedCostMatrix(&relaxedCost, &lambdas);
-		/*
-		for(auto x : relaxedCost){
-
-			for(auto y : x){
-
-				cout << y << " ";
-			}
-
-			cout << endl;
-		}*/
 
 		Kruskal tree(removeFirstNode(relaxedCost)); //Minimal spanning Tree solver
 		cost = tree.MST(relaxedCost.size() - 1) + (2* sumArray(&lambdas));
@@ -176,13 +179,17 @@ void solveLagrangianRelaxation(Rlang *base, vvi *distanceMatrix, double upperBou
 			}
 		}
 
-		//cout << "Cost: " << cost << endl;
+		vector<int> subGradient = calculateSubGradient(&solution);
+		int sumSubGradient = totalSubGradient(&subGradient);
+		double mi;
 
 		if(cost > best.cost){
 
 			best.cost = cost;
 			best.lambdas = lambdas;
 			best.solution = solution;
+			best.subgradients = subGradient;
+			best.sumSubgradients = sumSubGradient;
 			iterations = 0;
 		}
 
@@ -196,76 +203,24 @@ void solveLagrangianRelaxation(Rlang *base, vvi *distanceMatrix, double upperBou
 				eps /= 2;
 			}
 		}
-		//cout << "EPS:" << eps << endl;
-		/*
-		for(auto p : solution){
-
-			for(auto a : p){
-
-				cout << a << " ";
-			}
-
-			cout << endl;
-		}*/
-		vector<int> subGradient = calculateSubGradient(solution);
-		/*
-		for(auto s : subGradient){
-
-			cout << "Sub: " << s << endl;
-		}*/
-		
-		double mi;
-
-		int sumSubGradient = 0;
-
-		for(auto s : subGradient){
-
-			sumSubGradient += pow(s,2);
-		}
 
 		if(sumSubGradient == 0){
 	
 			best.cost = cost;
 			best.lambdas = lambdas;
 			best.solution = solution;
+			best.subgradients = subGradient;
+			best.sumSubgradients = sumSubGradient;
 			break;
 		}
 		
 		mi = (eps*(upperBound - cost))/ sumSubGradient;
 
-		//cout << "Mi:" << mi << endl;
-
 		for(int i = 0; i < lambdas.size(); i++){
 
 			lambdas[i] += mi * (subGradient[i]);
 		}
-		/*
-		for(auto l : lambdas){
-
-			cout << "Lambda: " << l << endl;
-		}*/
-
 	}
 
 	*base = best;
-}
-
-int main(int argc, char** argv){
-
-	Rlang relaxation;
-	Data *data = new Data(argc, argv[1]);
-	data->read();
-
-	vvi *distanceMatrix = new vvi; //original matrix
-
-	setOriginalCostMatrix(distanceMatrix, data);
-
-	relaxation.cost = 0;
-	relaxation.lambdas = vector<double>(distanceMatrix->size(), 0);
-	
-	solveLagrangianRelaxation(&relaxation, distanceMatrix, stod(argv[2]));
-
-	cout << relaxation.cost << endl;
-	delete distanceMatrix;
-	delete data;
 }
