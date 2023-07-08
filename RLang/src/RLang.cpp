@@ -213,6 +213,11 @@ void solveLagrangianRelaxation(Rlang *const base, const vvi *const distanceMatri
 			best.sumSubgradients = sumSubGradient;
 			break;
 		}
+ 		else if(upperBound - cost < 1 - 1e-2){
+
+			best.cost = INFINITY;
+			break;
+		}
 		
 		mi = (eps*(upperBound - cost))/ sumSubGradient;
 

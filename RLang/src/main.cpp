@@ -17,15 +17,15 @@ typedef struct Node{
 int pickBiggerDegree(vector<int> subgradients){
 
     int biggerIndex = 0;
-    int biggerDegree = subgradients[0];
+    int lowerSubgradient = subgradients[0];
 
 
     for(int i = 1; i < subgradients.size(); i++){
 
-        if(subgradients[i] > biggerDegree){
+        if(subgradients[i] < lowerSubgradient){
 
             biggerIndex = i;
-            biggerDegree = subgradients[i];
+            lowerSubgradient = subgradients[i];
         }
     }
 
@@ -79,6 +79,7 @@ Node bnb(const vvi *const cost, double upperBound){
                 
                 upperBound = node.rlang.cost;
                 bestNode = node;
+                continue;
             }
         }
 
@@ -88,8 +89,6 @@ Node bnb(const vvi *const cost, double upperBound){
             n.forbiddenArcs = node.forbiddenArcs;
             n.rlang = node.rlang;
 
-
-            //n.forbiddenArcs.push_back(make_pair(node.chosenConnections[i], node.chosen));
             n.forbiddenArcs.push_back(make_pair(node.chosen, node.chosenConnections[i]));
 
             for(int j = 0; j < dimension; j++){
@@ -103,12 +102,10 @@ Node bnb(const vvi *const cost, double upperBound){
             for(int j = 0; j < n.forbiddenArcs.size(); j++){
 
                 fluidCost[n.forbiddenArcs[j].first][n.forbiddenArcs[j].second] = INFINITY;
+                fluidCost[n.forbiddenArcs[j].second][n.forbiddenArcs[j].first] = INFINITY;
             }
 
             solveLagrangianRelaxation(&n.rlang, &fluidCost, upperBound);
-
-            n.rlang.cost = r->cost;
-            cout << n.rlang.cost << endl;
             
             if(n.rlang.cost < upperBound){
 
@@ -132,7 +129,7 @@ int main(int argc, char** argv){
     data->read();
 	const int dimension = data->getDimension();
 
-    const double upperBound = stod(argv[2]);
+    const double upperBound = stod(argv[2]) + 1;
     vvi cost;
 
     setOriginalCostMatrix(&cost, data);
