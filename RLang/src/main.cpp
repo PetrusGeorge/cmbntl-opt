@@ -100,7 +100,7 @@ Node bnb(const vvi *const cost, double upperBound){
             }
 
             for(int j = 0; j < n.forbiddenArcs.size(); j++){
-
+                
                 fluidCost[n.forbiddenArcs[j].first][n.forbiddenArcs[j].second] = INFINITY;
                 fluidCost[n.forbiddenArcs[j].second][n.forbiddenArcs[j].first] = INFINITY;
             }

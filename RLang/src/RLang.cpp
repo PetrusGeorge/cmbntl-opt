@@ -170,7 +170,7 @@ void solveLagrangianRelaxation(Rlang *const base, const vvi *const distanceMatri
 		cost = tree.MST(relaxedCost.size() - 1) + (2* sumArray(&lambdas));
 
 		solution = insertInitialPoint(tree.getEdges(), &relaxedCost);
-		
+
 		for(int i = 1; i < solution[0].size(); i++){
 
 			if(solution[0][i]){
