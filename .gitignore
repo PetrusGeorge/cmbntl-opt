@@ -3,4 +3,6 @@ GILS-RVND/TSP/src/.vscode
 GILS-RVND/MLP/mlp
 GILS-RVND/MLP/src/.vscode
 BnB/bnb
+BnC/bnc
+BnC/obj/*
 .vscode

@@ -18,6 +18,7 @@ IloCplex::CallbackI* MyBranchCallback::duplicateCallback() const
 //O propósito deste callback é apenas colocar o NodeInfo em cada do nó da árvore. Isso é feito no momento do branching.
 void MyBranchCallback::main() 
 {
+    std::cout << "askhjdgjashgdjhasgdusgfiuasbdkfjhbasuiyvgsiabvsuiya";
 	// How many branches would CPLEX create? 
 	IloInt const nbranch = getNbranches(); 
 
