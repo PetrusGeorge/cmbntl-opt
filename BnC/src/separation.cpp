@@ -1,6 +1,8 @@
 #include "separation.h"
 
-pair<int,double> chooseBestMaxBack(vector<int> s, int n, double **x){
+typedef vector<int> super_node;
+
+pair<int,double> chooseBestMaxBack(vector<int> *s, int n, double **x){
 
     int bestNode;
     double bestMaxBack = -1;//Ensure that it's lower than first maxBack
@@ -9,21 +11,21 @@ pair<int,double> chooseBestMaxBack(vector<int> s, int n, double **x){
 
         double maxBack = 0;
 
-        if(find(s.begin(), s.end(), i) != s.end()){
+        if(find(s->begin(), s->end(), i) != s->end()){
           
             continue;
         }
 
-        for(int j = 0; j < s.size(); j++){
+        for(int j = 0; j < s->size(); j++){
 
-            if(s[j] < i){
+            if((*s)[j] < i){
 
-                maxBack += x[s[j]][i];
+                maxBack += x[(*s)[j]][i];
             }
 
             else{
 
-                maxBack += x[i][s[j]];
+                maxBack += x[i][(*s)[j]];
             }
         }
 
@@ -37,7 +39,7 @@ pair<int,double> chooseBestMaxBack(vector<int> s, int n, double **x){
     return make_pair(bestNode, bestMaxBack);
 }
 
-double calculateCutMin(int node, int n, double **x){
+double calculatInitialMaxBackCutMin(int node, int n, double **x){
 
     double value = 0;
 
@@ -69,6 +71,17 @@ vector<vector<int>> MaxBack(double **x, int n){
 
     for(int i = 0; i < n; i++){
 
+        for(int j = 0; j < n; j++){
+
+            if(x[i][j] < 1e-4){
+
+                x[i][j] = 0;
+            }
+        }
+    }
+
+    for(int i = 0; i < n; i++){
+
         cont = false;
 
         for(int j = 0; j < result.size(); j++){
@@ -87,12 +100,12 @@ vector<vector<int>> MaxBack(double **x, int n){
 
         vector<int> s = {i};
         vector<int> sMin;
-        double cutMin = calculateCutMin(s[0], n, x);
+        double cutMin = calculatInitialMaxBackCutMin(s[0], n, x);
         double cutVal = cutMin;
 
         while(s.size() < n){
 
-            pair<int,double> bestNode = chooseBestMaxBack(s, n, x);
+            pair<int,double> bestNode = chooseBestMaxBack(&s, n, x);
 
             s.push_back(bestNode.first);
             cutVal += 2 + - (bestNode.second * 2);
@@ -110,8 +123,134 @@ vector<vector<int>> MaxBack(double **x, int n){
     }
 
     return result;
-} 
+}
+
+double sumSuperNodeMaxBack(int firstNode, int secondNode, vector<super_node> *superNodes, double **x){
+
+    double sum = 0;
+
+    for(int i = 0; i < (*superNodes)[firstNode].size(); i++){
+
+        int iNode = (*superNodes)[firstNode][i];
+
+        for(int j = 0; j < (*superNodes)[secondNode].size(); j++){
+
+            int jNode = (*superNodes)[secondNode][j];
+
+            if(iNode < jNode){
+
+                sum += x[iNode][jNode];
+            }
+
+            else{
+
+                sum += x[jNode][iNode];
+            }
+        }
+    }
+
+    return sum;
+}
+
+pair<int,double> chooseBestMaxBackSuperNodes(vector<int> *s, vector<super_node> *superNodes, double **x){
+
+    int bestNode;
+    double bestMaxBack = -1;//Ensure that it's lower than first maxBack
+
+    for(int i = 0; i < superNodes->size(); i++){
+
+        double maxBack = 0;
+
+        if(find(s->begin(), s->end(), i) != s->end()){
+          
+            continue;
+        }
+
+        for(int j = 0; j < s->size(); j++){
+
+            maxBack += sumSuperNodeMaxBack(i, (*s)[j], superNodes, x);
+        }     
+        
+        if(maxBack > bestMaxBack){
+
+            bestMaxBack = maxBack;
+            bestNode = i;
+        }
+    }
+
+    return make_pair(bestNode, bestMaxBack);
+}
 
 vector<vector<int>> MinCut(double **x, int n){
+
+    for(int i = 0; i < n; i++){
+
+        for(int j = i + 1; j < n; j++){
+
+            if(x[i][j] < 1e-6){
+
+                x[i][j] = 0;
+            }
+        }
+    }//Fix x values
+
+    vector<vector<int>> result;
+    double cutSize;
+    pair<int,int> merge;
+    vector<super_node> superNodes;
+
+    srand(time(NULL));
+    int randNode = rand() % n;
+
+    superNodes.push_back({randNode});
+
+    for(int i = 0; i < n; i++){
+
+        if(i == randNode){
+
+            continue;
+        }
+
+        super_node s = {i};
+        superNodes.push_back(s);
+    }
+
+    while(superNodes.size() > 1){
+
+        vector<int> s = {0};
+
+        while(s.size() < superNodes.size()){
+
+            pair<int,double> bestNode = chooseBestMaxBackSuperNodes(&s, &superNodes, x);
+
+            s.push_back(bestNode.first);
+
+            if(s.size() == superNodes.size() - 1){
+
+                merge.first = s.back();
+            }
+            else if(s.size() == superNodes.size()){
+
+                merge.second = s.back();
+                cutSize = bestNode.second;
+            }
+        }
+
+        if(cutSize < 2 - 1e-6){
+            vector<int> temp;
+
+            for(int k = 0; k < s.size() - 1; k++){
+
+                temp.insert(temp.end(), superNodes[s[k]].begin(), superNodes[s[k]].end());
+            }
+
+            result.push_back(temp);
+        }
+
+        superNodes[merge.first].insert(superNodes[merge.first].end(), superNodes[merge.second].begin(), superNodes[merge.second].end());
+        superNodes.erase(superNodes.begin() + merge.second); //Merge the two super nodes
+    }
+    
+    return result;
 
 }
