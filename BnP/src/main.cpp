@@ -1,26 +1,20 @@
 #include "instance.hpp"
+#include "masterProblem.hpp"
+#include <ilcplex/ilocplex.h>
+
 
 int main(int argc, char **argv){
 
-    Instance *test;
-    try{
+    Instance *test = new Instance(argv[1]);       
+    MasterProblem *master = new MasterProblem(test->getDimension());
 
-        test = new Instance(argv[1]);        
-    }catch(std::string e){
+    std::cout << master->solve() << std::endl;
 
-        std::cout << e << std::endl;
-    }
+    std::vector<bool> c = {true, true, false, false, false};
 
-    for(int i = 1; true; i++){
+    master->addCollumn(&c);
 
-        try{
-            std::cout << test->getWeight(i) << std::endl;
-        }catch(std::string e){
-
-            std::cout << e << std::endl;
-            return 1;
-        }
-    }
+    std::cout << master->solve() << std::endl;
 
     return 0;
 }

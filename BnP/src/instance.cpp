@@ -6,8 +6,8 @@ Instance::Instance(char *argv){
 
     if(!file){
 
-        std::string e = "File couldn't be read";
-        throw(e);
+        std::cout << "File couldn't be read" << std::endl;
+        exit(1);
     }
 
     file >> dimension;
@@ -47,8 +47,8 @@ int Instance::getWeight(int pos){
 
     if(pos > dimension or pos < 1){
 
-        std::string e = "Item " + std::to_string(pos) + " is out of bound";
-        throw(e);
+        std::cout << "Item " << pos << " is out of bound";
+        exit(2);
     }
 
     return (*itemsWeight)[pos - 1];
