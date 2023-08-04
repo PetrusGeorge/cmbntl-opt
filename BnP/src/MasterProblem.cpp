@@ -1,4 +1,4 @@
-#include "masterProblem.hpp"
+#include "MasterProblem.hpp"
 
 MasterProblem::MasterProblem(int size){
  
@@ -11,7 +11,7 @@ MasterProblem::MasterProblem(int size){
     constraints = IloRangeArray(env);
     lambda = IloNumVarArray(env, dimension, 0, IloInfinity);
 
-    a = std::vector<std::vector<bool>>(dimension, std::vector<bool>(dimension, false));
+    arrangements = std::vector<std::vector<bool>>(dimension, std::vector<bool>(dimension, false));
 
     for(int i = 0; i < dimension; i++){
 
@@ -21,7 +21,7 @@ MasterProblem::MasterProblem(int size){
         lambda[i].setName(varName);
         sum += lambda[i];
         constraints.add(lambda[i] == 1);
-        a[i][i] = true;
+        arrangements[i][i] = true;
     }
 
     obj = IloMinimize(env, sum);
@@ -31,11 +31,21 @@ MasterProblem::MasterProblem(int size){
     model.add(constraints);
 }
 
+MasterProblem::~MasterProblem(){
+
+    delete dual;
+}
+
 double MasterProblem::solve(){
 
+    //static int number = 0;
     solver.setOut(env.getNullStream());
     solver.solve();
-    solver.exportModel("master.lp");
+
+    //std::string fileName = "master" + std::to_string(number) + ".lp";
+    //number++;
+
+    //solver.exportModel(fileName.c_str());
 
     return solver.getObjValue();
 }
@@ -49,11 +59,22 @@ void MasterProblem::addCollumn(const std::vector<bool> * const c){
         collumn += constraints[i](c->at(i));
     }
 
-    a.push_back(*c);
+    arrangements.push_back(*c);
 
     char varName[50];
     sprintf(varName, "λ_%d", (int)(lambda.getSize() + 1));
 
     lambda.add(IloNumVar(collumn, 0, IloInfinity));
     lambda[lambda.getSize() - 1].setName(varName);
+}
+
+IloNumArray* MasterProblem::getDual(){
+
+    delete dual;
+
+    dual = new IloNumArray(env, dimension);
+
+    solver.getDuals(*dual, constraints);
+
+    return dual;
 }

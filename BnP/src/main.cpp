@@ -1,20 +1,20 @@
-#include "instance.hpp"
-#include "masterProblem.hpp"
-#include <ilcplex/ilocplex.h>
-
+#include "MasterProblem.hpp"
+#include "SubProblem.hpp"
 
 int main(int argc, char **argv){
 
-    Instance *test = new Instance(argv[1]);       
-    MasterProblem *master = new MasterProblem(test->getDimension());
+
+    Instance *binPack = new Instance(argv[1]);       
+    MasterProblem *master = new MasterProblem(binPack->getDimension());
 
     std::cout << master->solve() << std::endl;
 
-    std::vector<bool> c = {true, true, false, false, false};
+    SubProblem *sub = new SubProblem(binPack, master->getDual());
 
-    master->addCollumn(&c);
+    std::cout << sub->solve() << std::endl;
 
-    std::cout << master->solve() << std::endl;
+    delete binPack;
+    delete master;
 
     return 0;
 }

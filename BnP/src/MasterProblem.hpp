@@ -11,12 +11,15 @@ class MasterProblem {
     IloObjective obj;
     IloRangeArray constraints;
     IloNumVarArray lambda;
+    IloNumArray* dual;
 
-    std::vector<std::vector<bool>> a;
+    std::vector<std::vector<bool>> arrangements;
     int dimension;
 
     public:
-        MasterProblem(const int dimension);    
+        MasterProblem(const int dimension);
+        ~MasterProblem();
         double solve();
         void addCollumn(const std::vector<bool> * const c);
+        IloNumArray* getDual();
 };

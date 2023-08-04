@@ -1,4 +1,4 @@
-#include "instance.hpp"
+#include "Instance.hpp"
 
 Instance::Instance(char *argv){
 
@@ -28,8 +28,8 @@ Instance::Instance(char *argv){
 
     if(!file.eof()){
 
-        std::string e = "Instance wasn't read properly";
-        throw (e);
+        std::cout << "Instance wasn't read properly" << std::endl;
+        exit(2);
     }
 }
 
@@ -45,11 +45,11 @@ int Instance::getDimension(){
 
 int Instance::getWeight(int pos){
 
-    if(pos > dimension or pos < 1){
+    if(pos >= dimension or pos < 0){
 
         std::cout << "Item " << pos << " is out of bound";
-        exit(2);
+        exit(3);
     }
 
-    return (*itemsWeight)[pos - 1];
+    return (*itemsWeight)[pos];
 }
