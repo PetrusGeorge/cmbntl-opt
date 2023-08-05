@@ -33,6 +33,11 @@ Instance::Instance(char *argv){
     }
 }
 
+Instance::~Instance(){
+
+    delete itemsWeight;
+}
+
 int Instance::getCapacity(){
 
     return this->capacity;

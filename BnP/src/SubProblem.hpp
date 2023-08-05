@@ -1,3 +1,6 @@
+#ifndef SUBPROBLEM_HPP
+#define SUBPROBLEM_HPP
+
 #include <ilcplex/ilocplex.h>
 #include "Instance.hpp"
 #include <vector>
@@ -10,12 +13,15 @@ class SubProblem{
     IloObjective obj;
     IloRangeArray constraints;
     IloBoolVarArray x;
-
+    
     int dimension;
 
     public:
         SubProblem(Instance *instance, IloNumArray *pi);
+        ~SubProblem();
         double solve();
-        std::vector<bool> getSolution();
+        std::vector<bool>* getSolution();
 
 };
+
+#endif

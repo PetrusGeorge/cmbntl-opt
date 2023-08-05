@@ -1,3 +1,6 @@
+#ifndef INSTANCE_HPP
+#define INSTANCE_HPP
+
 #include <fstream>
 #include <vector>
 #include <iostream>
@@ -13,8 +16,11 @@ class Instance{
     public:
 
         Instance(char *argv);
+        ~Instance();
         int getDimension();
         int getCapacity();
 
         int getWeight(int pos);
 };
+
+#endif

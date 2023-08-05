@@ -22,29 +22,42 @@ SubProblem::SubProblem(Instance *instance, IloNumArray *pi){
         sumObj += (*pi)[i] * x[i];
     }
 
-    constraints.add(sumWeight <= dimension);
-    obj = IloMaximize(env, sumWeight);
+    constraints.add(sumWeight <= instance->getCapacity());
+    obj = IloMaximize(env, sumObj);
 
     model.add(obj);
     model.add(constraints);
 }
 
+SubProblem::~SubProblem(){
+
+    model.end();
+    solver.end();
+    constraints.end();
+    x.end();
+    obj.end();
+    env.end();
+}
+
 double SubProblem::solve(){
 
-    static int number = 0;
     solver.setOut(env.getNullStream());
     solver.solve();
-
-    std::string fileName = "sub" + std::to_string(number) + ".lp";
-    number++;
-
-    solver.exportModel(fileName.c_str());
 
     return 1 - solver.getObjValue();
 }
 
-std::vector<double> SubProblem::getSolution(){
+std::vector<bool>* SubProblem::getSolution(){
 
-    std::vector<double> solution(dimension);
+    std::vector<bool> *solution = new std::vector<bool>(dimension);
 
+    IloNumArray values(env, dimension);
+
+    solver.getValues(values, x);
+
+    for(int i = 0; i < dimension; i++){
+        (*solution)[i] = values[i];
+    }
+
+    return solution;
 }

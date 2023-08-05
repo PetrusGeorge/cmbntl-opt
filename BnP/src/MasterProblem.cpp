@@ -1,10 +1,10 @@
 #include "MasterProblem.hpp"
 
-MasterProblem::MasterProblem(int size){
+MasterProblem::MasterProblem(Instance *instance){
  
     IloExpr sum(env);
 
-    dimension = size;
+    dimension = instance->getDimension();
 
     model = IloModel(env);
     solver = IloCplex(model);
@@ -33,19 +33,18 @@ MasterProblem::MasterProblem(int size){
 
 MasterProblem::~MasterProblem(){
 
-    delete dual;
+    model.end();
+    solver.end();
+    constraints.end();
+    lambda.end();
+    obj.end();
+    env.end();
 }
 
 double MasterProblem::solve(){
 
-    //static int number = 0;
     solver.setOut(env.getNullStream());
     solver.solve();
-
-    //std::string fileName = "master" + std::to_string(number) + ".lp";
-    //number++;
-
-    //solver.exportModel(fileName.c_str());
 
     return solver.getObjValue();
 }
@@ -70,9 +69,7 @@ void MasterProblem::addCollumn(const std::vector<bool> * const c){
 
 IloNumArray* MasterProblem::getDual(){
 
-    delete dual;
-
-    dual = new IloNumArray(env, dimension);
+    IloNumArray *dual = new IloNumArray(env, dimension);
 
     solver.getDuals(*dual, constraints);
 
