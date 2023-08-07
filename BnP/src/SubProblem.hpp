@@ -1,6 +1,8 @@
 #ifndef SUBPROBLEM_HPP
 #define SUBPROBLEM_HPP
 
+#define BIG_M 10000000.0
+
 #include <ilcplex/ilocplex.h>
 #include "Instance.hpp"
 #include <vector>
@@ -17,9 +19,12 @@ class SubProblem{
     int dimension;
 
     public:
-        SubProblem(Instance *instance, IloNumArray *pi);
+        SubProblem(Instance *instance);
         ~SubProblem();
         double solve();
+        std::pair<double, std::vector<bool>*> solveMinknap(IloNumArray *pi, Instance *instance);
+        void changeObjective(IloNumArray *pi);
+        void addEqualityConstraint(int index1, int index2);
         std::vector<bool>* getSolution();
 
 };

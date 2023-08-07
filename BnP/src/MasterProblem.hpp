@@ -16,15 +16,18 @@ class MasterProblem {
     IloRangeArray constraints;
     IloNumVarArray lambda;
 
-    std::vector<std::vector<bool>> arrangements;
     int dimension;
 
     public:
+        std::vector<std::vector<bool>> arrangements;
+        
         MasterProblem(Instance *instance);
         ~MasterProblem();
         double solve();
         void addCollumn(const std::vector<bool> * const c);
         IloNumArray* getDual();
+        std::vector<double>* getLambdas();
+        
 };
 
 #endif
