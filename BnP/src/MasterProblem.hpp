@@ -4,6 +4,7 @@
 #include <ilcplex/ilocplex.h>
 #include "Instance.hpp"
 #include <vector>
+#include <algorithm>
 
 #define INF 1000000000
 
@@ -27,6 +28,7 @@ class MasterProblem {
         void addCollumn(const std::vector<bool> * const c);
         IloNumArray* getDual();
         std::vector<double>* getLambdas();
+        void forceLambdas(std::vector<int>* banned);
         
 };
 

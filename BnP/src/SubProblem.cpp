@@ -32,6 +32,7 @@ SubProblem::~SubProblem(){
     model.end();
     solver.end();
     constraints.end();
+    variableConstraints.end();
     x.end();
     obj.end();
     env.end();
@@ -42,7 +43,7 @@ double SubProblem::solve(){
     solver.setOut(env.getNullStream());
     solver.solve();
 
-    return 1 - solver.getObjValue();
+    return solver.getObjValue();
 }
 
 std::pair<double, std::vector<bool>* > SubProblem::solveMinknap(IloNumArray *pi, Instance *instance){

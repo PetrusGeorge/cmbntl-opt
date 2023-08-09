@@ -14,6 +14,7 @@ class SubProblem{
     IloCplex solver;
     IloObjective obj;
     IloRangeArray constraints;
+    IloRangeArray variableConstraints;
     IloBoolVarArray x;
     
     int dimension;
@@ -26,7 +27,7 @@ class SubProblem{
         void changeObjective(IloNumArray *pi);
         void addEqualityConstraint(int index1, int index2);
         std::vector<bool>* getSolution();
-
+        void forceConstraints(std::vector<std::pair<int, int>>);
 };
 
 #endif

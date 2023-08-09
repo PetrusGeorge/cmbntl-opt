@@ -16,7 +16,7 @@ MasterProblem::MasterProblem(Instance *instance){
     for(int i = 0; i < dimension; i++){
 
         char varName[50];
-        sprintf(varName, "λ_%d", i + 1);
+        sprintf(varName, "λ_%d", i);
 
         lambda[i].setName(varName);
         sum += lambda[i];
@@ -61,7 +61,7 @@ void MasterProblem::addCollumn(const std::vector<bool> * const c){
     arrangements.push_back(*c);
 
     char varName[50];
-    sprintf(varName, "λ_%d", (int)(lambda.getSize() + 1));
+    sprintf(varName, "λ_%d", (int)(lambda.getSize()));
 
     lambda.add(IloNumVar(collumn, 0, IloInfinity));
     lambda[lambda.getSize() - 1].setName(varName);
@@ -90,4 +90,20 @@ std::vector<double>* MasterProblem::getLambdas(){
     }
 
     return l;
+}
+
+void MasterProblem::forceLambdas(std::vector<int>* banned){
+
+    for(int i = 0; i < lambda.getSize(); i++){
+
+        if(std::find(banned->begin(), banned->end(), i) != banned->end()){
+
+            lambda[i].setUB(0);
+        }
+
+        else{
+
+            lambda[i].setUB(IloInfinity);
+        }
+    }
 }
