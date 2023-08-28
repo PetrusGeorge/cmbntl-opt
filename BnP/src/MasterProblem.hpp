@@ -27,7 +27,7 @@ class MasterProblem {
         double solve();
         void addCollumn(std::vector<bool> *c);
         IloNumArray* getDual();
-        std::vector<double>* getLambdas();
+        std::vector<double> getLambdas();
         std::vector<int> *getBannedLambdas(std::vector<std::pair<int, int>> *together, std::vector<std::pair<int, int>> *separated);
         void forceLambdas(std::vector<std::pair<int, int>> *together, std::vector<std::pair<int, int>> *separated);
         std::pair<int, int> getMostFractional();

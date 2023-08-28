@@ -9,8 +9,26 @@
 #include "MasterProblem.hpp"
 #include "SubProblem.hpp"
 
+typedef struct Node{
 
-std::vector<double>* GCMinknap(Instance *instance, MasterProblem *master);
-std::vector<double>* GC(Instance *instance, MasterProblem *master, SubProblem *sub);
+    std::vector<std::pair<int, int>> together;
+    std::vector<std::pair<int, int>> separated;
+    std::vector<double> solution;
+    bool feasible;
+    double value;
+
+    Node(){}
+
+    Node(Node *father){
+        together = father->together;
+        separated = father->separated;
+        solution = father->solution;
+        feasible = father->feasible;
+        value = father->value;
+    }
+}Node;
+
+std::vector<double> GCMinknap(Instance *instance, MasterProblem *master, SubProblem *sub);
+void GC(Instance *instance, MasterProblem *master, SubProblem *sub, Node *n);
 
 #endif

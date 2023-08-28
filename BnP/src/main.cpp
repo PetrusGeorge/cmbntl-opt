@@ -1,13 +1,72 @@
 #include "GC.hpp"
 #include <chrono>
+#include <list>
+#include <numeric>
 
-typedef struct{
+bool isFeasible(std::vector<double> *solution){
 
-    std::vector<std::pair<int, int>> together;
-    std::vector<std::pair<int, int>> separated;
-    bool feasible;
-    double value;
-}Node;
+    for(int i = 0; i < solution->size(); i++){
+        if(not ((*solution)[i] - 1 >= 0 - EPS || (*solution)[i] + 1 <= 1 + EPS)){
+ 
+            return false;
+        }
+    }
+
+    return true;
+}
+
+double BnB(Instance *binPack){
+    
+    MasterProblem *master = new MasterProblem(binPack);
+    SubProblem *sub = new SubProblem(binPack);
+    std::list<Node*> tree;
+
+    Node *root = new Node;
+    double UB;
+
+    root->solution = GCMinknap(binPack, master, sub);
+    UB = root->value = std::accumulate(root->solution.begin(), root->solution.end(), 0.0);//Solving Root Node
+    root->feasible = isFeasible(&root->solution);
+
+    if(root->feasible){
+        delete master;
+        delete sub;
+        delete root;
+        
+        return UB;
+    }
+
+    Node *newNodeTogether = new Node(root);
+    Node *newNodeSeparated = new Node(root);
+    std::pair<int,int> fractionedPair = master->getMostFractional();
+
+    tree.push_back(newNodeTogether);
+    tree.back()->together.push_back(fractionedPair);//Setting first node;
+   
+    tree.push_back(newNodeSeparated);
+    tree.back()->separated.push_back(fractionedPair);//Setting second node;
+
+    delete root;
+
+    while(!tree.empty()){
+
+        Node *a = tree.back();
+        tree.pop_back();
+
+        GC(binPack, master, sub, a);
+
+        delete a;
+    }
+
+    delete master;
+    delete sub;
+    for(std::list<Node*>::iterator it = tree.begin(); it != tree.end(); it++){
+
+        delete *it;
+    }
+
+    return UB;
+}
 
 int main(int argc, char **argv){
 
@@ -15,20 +74,9 @@ int main(int argc, char **argv){
     start = std::chrono::system_clock::now();
 
     Instance *binPack = new Instance(argv[1]);
-    MasterProblem *master = new MasterProblem(binPack);
-    SubProblem *sub = new SubProblem(binPack);
-    std::vector<double> *solution; 
 
-    solution = GCMinknap(binPack, master);
+    BnB(binPack);
 
-    for(int i = 0; i < solution->size(); i++){
-
-        std::cout << (*solution)[i] << " ";
-    }std::cout << std::endl;
-
-    delete sub;
-    delete master;
-    delete solution;
     delete binPack;
 
     end = std::chrono::system_clock::now();

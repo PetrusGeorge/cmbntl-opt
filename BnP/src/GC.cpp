@@ -1,13 +1,12 @@
 #include "GC.hpp"
 
-std::vector<double>* GCMinknap(Instance *binPack, MasterProblem *master){
+std::vector<double> GCMinknap(Instance *binPack, MasterProblem *master, SubProblem *sub){
 
-    std::cout << master->solve() << std::endl;
+    master->solve();
     
     IloNumArray *pi; //pointer to dual variables
-    SubProblem *sub = new SubProblem(binPack);
     std::pair<double, std::vector<bool>* > result;
-    std::vector<double> *solution;
+    std::vector<double> solution;
 
     while(true){
 
@@ -33,17 +32,14 @@ std::vector<double>* GCMinknap(Instance *binPack, MasterProblem *master){
 
     solution = master->getLambdas();
 
-    delete sub;
-
     return solution;
 }
 
-std::vector<double>* GC(Instance *binPack, MasterProblem *master, SubProblem *sub){
+void GC(Instance *binPack, MasterProblem *master, SubProblem *sub, Node *n){
 
-    std::cout << master->solve() << std::endl;
+    master->solve();
     
     IloNumArray *pi; //pointer to dual variables
-    std::vector<double> *solution;
     double result;
 
     while(true){
@@ -67,10 +63,7 @@ std::vector<double>* GC(Instance *binPack, MasterProblem *master, SubProblem *su
             delete c;
         }
 
-        std::cout << master->solve() << std::endl;
+        master->solve();
     }
-
-    solution = master->getLambdas();
-
-    return solution;
+    n->solution = master->getLambdas();
 }

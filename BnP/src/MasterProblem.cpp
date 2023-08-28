@@ -76,17 +76,17 @@ IloNumArray* MasterProblem::getDual(){
     return dual;
 }
 
-std::vector<double>* MasterProblem::getLambdas(){
+std::vector<double> MasterProblem::getLambdas(){
 
     IloNumArray solution(env);
 
     solver.getValues(solution, lambda);
 
-    std::vector<double> *l = new std::vector<double>(solution.getSize());
+    std::vector<double> l(solution.getSize());
 
     for(int i = 0; i < solution.getSize(); i++){
 
-        (*l)[i] = solution[i];
+        l[i] = solution[i];
     }
 
     return l;

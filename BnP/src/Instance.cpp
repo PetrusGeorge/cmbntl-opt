@@ -7,6 +7,7 @@ Instance::Instance(char *argv){
     if(!file){
 
         std::cout << "File couldn't be read" << std::endl;
+        delete this;
         exit(1);
     }
 
@@ -29,6 +30,7 @@ Instance::Instance(char *argv){
     if(!file.eof()){
 
         std::cout << "Instance wasn't read properly" << std::endl;
+        delete this;
         exit(2);
     }
 }
@@ -53,6 +55,7 @@ int Instance::getWeight(int pos){
     if(pos >= dimension or pos < 0){
 
         std::cout << "Item " << pos << " is out of bound";
+        delete this;
         exit(3);
     }
 
