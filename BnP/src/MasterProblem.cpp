@@ -49,7 +49,7 @@ double MasterProblem::solve(){
     return solver.getObjValue();
 }
 
-void MasterProblem::addCollumn(const std::vector<bool> * const c){
+void MasterProblem::addCollumn(std::vector<bool> *c){
 
     IloNumColumn collumn = obj(1);
 
@@ -92,7 +92,45 @@ std::vector<double>* MasterProblem::getLambdas(){
     return l;
 }
 
-void MasterProblem::forceLambdas(std::vector<int>* banned){
+std::vector<int>* MasterProblem::getBannedLambdas(std::vector<std::pair<int, int>> *together, std::vector<std::pair<int, int>> *separated){
+
+    std::vector<int> *banned = new std::vector<int>();
+
+    if(together != NULL){
+        for(int i = 0; i < together->size(); i++){
+
+            for(int j = 0; j < arrangements.size(); j++){
+
+                if(arrangements[j][(*together)[i].first] != arrangements[j][(*together)[i].second]){//ban if they are separated
+
+                    banned->push_back(j);
+                }
+            }
+        }
+    }
+
+    if(separated != NULL){
+        for(int i = 0; i < separated->size(); i++){
+
+            for(int j = 0; j < arrangements.size(); j++){
+
+                if(arrangements[j][(*separated)[i].first] && arrangements[j][(*separated)[i].second]){//ban if they are together
+
+                    banned->push_back(j);
+                }
+            }
+        }
+    }
+
+    std::sort(banned->begin(), banned->end());
+    banned->erase(std::unique(banned->begin(), banned->end()), banned->end());
+
+    return banned;
+}
+
+void MasterProblem::forceLambdas(std::vector<std::pair<int, int>> *together, std::vector<std::pair<int, int>> *separated){
+
+    std::vector<int> *banned = getBannedLambdas(together, separated);
 
     for(int i = 0; i < lambda.getSize(); i++){
 
@@ -106,4 +144,39 @@ void MasterProblem::forceLambdas(std::vector<int>* banned){
             lambda[i].setUB(IloInfinity);
         }
     }
+
+    delete banned;
+}
+
+std::pair<int, int> MasterProblem::getMostFractional(){
+
+    std::pair<int, int> mostFractional = std::make_pair(-1, -1);
+    double mostFractionalValue = INF;
+
+    for(int i = 0; i < dimension; i++){//item i
+
+        for(int j = i + 1; j < dimension; j++){//item j
+
+            double fractionalValue = 0;
+            bool fractional = false;
+
+            for(int l = dimension; l < arrangements.size(); l++){//Lambda l
+
+                if(arrangements[l][i] && arrangements[l][j]){
+
+                    fractionalValue += solver.getValue(lambda[l]);
+                    fractional = true;
+                }
+            }
+
+            if(fabs(fractionalValue - 0.5) < mostFractionalValue && fractional){
+
+                mostFractionalValue = fabs(fractionalValue - 0.5);
+                mostFractional = std::make_pair(i, j);
+            }
+
+        }
+    }
+    
+    return mostFractional;
 }

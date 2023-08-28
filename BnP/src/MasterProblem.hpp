@@ -18,17 +18,19 @@ class MasterProblem {
     IloNumVarArray lambda;
 
     int dimension;
+    std::vector<std::vector<bool>> arrangements;
 
     public:
-        std::vector<std::vector<bool>> arrangements;
         
         MasterProblem(Instance *instance);
         ~MasterProblem();
         double solve();
-        void addCollumn(const std::vector<bool> * const c);
+        void addCollumn(std::vector<bool> *c);
         IloNumArray* getDual();
         std::vector<double>* getLambdas();
-        void forceLambdas(std::vector<int>* banned);
+        std::vector<int> *getBannedLambdas(std::vector<std::pair<int, int>> *together, std::vector<std::pair<int, int>> *separated);
+        void forceLambdas(std::vector<std::pair<int, int>> *together, std::vector<std::pair<int, int>> *separated);
+        std::pair<int, int> getMostFractional();
         
 };
 

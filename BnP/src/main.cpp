@@ -1,6 +1,13 @@
 #include "GC.hpp"
 #include <chrono>
 
+typedef struct{
+
+    std::vector<std::pair<int, int>> together;
+    std::vector<std::pair<int, int>> separated;
+    bool feasible;
+    double value;
+}Node;
 
 int main(int argc, char **argv){
 
@@ -12,7 +19,7 @@ int main(int argc, char **argv){
     SubProblem *sub = new SubProblem(binPack);
     std::vector<double> *solution; 
 
-    solution = GC(binPack, master, sub);
+    solution = GCMinknap(binPack, master);
 
     for(int i = 0; i < solution->size(); i++){
 

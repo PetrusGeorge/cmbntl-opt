@@ -10,12 +10,14 @@ SubProblem::SubProblem(Instance *instance){
     model = IloModel(env);
     solver = IloCplex(model);
     constraints = IloRangeArray(env);
+    variableConstraints = IloRangeArray(env);
     x = IloBoolVarArray(env, dimension);
 
     for(int i = 0; i < dimension; i++){
 
         char varName[50];
         sprintf(varName, "X_%d", i + 1);
+        x[i].setName(varName);
 
         sumWeight += instance->getWeight(i) * x[i];
     }
@@ -25,6 +27,7 @@ SubProblem::SubProblem(Instance *instance){
 
     model.add(obj);
     model.add(constraints);
+    model.add(variableConstraints);
 }
 
 SubProblem::~SubProblem(){
@@ -90,13 +93,30 @@ void SubProblem::changeObjective(IloNumArray *pi){
     obj.setExpr(sumObj);
 }
 
-void SubProblem::addEqualityConstraint(int index1, int index2){
+void SubProblem::changeConstraints(std::vector<std::pair<int, int>> *together, std::vector<std::pair<int, int>> *separated){
 
-    IloExpr sum(env);
+    model.remove(variableConstraints);
+    variableConstraints.end();//Remove old constraints
 
-    sum += x[index1] + x[index2];
+    variableConstraints = IloRangeArray(env);
+    IloExpr force(env);
 
-    constraints.add(sum <= 1);
+    if(separated != NULL){
+        for(int i = 0; i < separated->size(); i++){
+
+            force = x[(*separated)[i].first] + x[(*separated)[i].second];
+            variableConstraints.add(force <= 1); //x_i + x_j <= 1 forcing x_i and x_j be 1 at the same time
+        }
+    }
+    if(together != NULL){
+        for(int i = 0; i < together->size(); i++){
+
+            force = x[(*together)[i].first] - x[(*together)[i].second];
+            variableConstraints.add(force == 0); //x_i - x_j == 0 forcing x_i == x_j
+        }
+    }
+
+    model.add(variableConstraints);
 }
 
 std::vector<bool>* SubProblem::getSolution(){

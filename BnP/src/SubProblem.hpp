@@ -25,9 +25,8 @@ class SubProblem{
         double solve();
         std::pair<double, std::vector<bool>*> solveMinknap(IloNumArray *pi, Instance *instance);
         void changeObjective(IloNumArray *pi);
-        void addEqualityConstraint(int index1, int index2);
         std::vector<bool>* getSolution();
-        void forceConstraints(std::vector<std::pair<int, int>>);
+        void changeConstraints(std::vector<std::pair<int, int>> *together, std::vector<std::pair<int, int>> *separated);
 };
 
 #endif

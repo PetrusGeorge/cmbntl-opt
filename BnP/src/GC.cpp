@@ -28,7 +28,7 @@ std::vector<double>* GCMinknap(Instance *binPack, MasterProblem *master){
             delete result.second;
         }
 
-        std::cout << master->solve() << std::endl;
+        master->solve();
     }
 
     solution = master->getLambdas();
