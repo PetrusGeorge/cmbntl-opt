@@ -1,4 +1,5 @@
 #include "GC.hpp"
+#include <chrono>
 
 std::vector<double> GCMinknap(Instance *binPack, MasterProblem *master, SubProblem *sub){
 
@@ -37,10 +38,14 @@ std::vector<double> GCMinknap(Instance *binPack, MasterProblem *master, SubProbl
 
 void GC(Instance *binPack, MasterProblem *master, SubProblem *sub, Node *n){
 
-    master->solve();
+    master->forceLambdas(&n->together, &n->separated);
+    sub->changeConstraints(&n->together, &n->separated);
     
     IloNumArray *pi; //pointer to dual variables
-    double result;
+    double subResult;
+    double masterResult;
+
+    masterResult = master->solve();
 
     while(true){
 
@@ -48,11 +53,11 @@ void GC(Instance *binPack, MasterProblem *master, SubProblem *sub, Node *n){
 
         sub->changeObjective(pi);
 
-        result = sub->solve();
+        subResult = sub->solve();
 
         delete pi;
 
-        if(1 - result >= 0 - EPS){
+        if(1 - subResult >= 0 - EPS){
 
             break;
         }
@@ -63,7 +68,8 @@ void GC(Instance *binPack, MasterProblem *master, SubProblem *sub, Node *n){
             delete c;
         }
 
-        master->solve();
+        masterResult = master->solve();
     }
     n->solution = master->getLambdas();
+    n->value = masterResult;
 }
