@@ -40,6 +40,7 @@ void GC(Instance *binPack, MasterProblem *master, SubProblem *sub, Node *n){
 
     master->forceLambdas(&n->together, &n->separated);
     sub->changeConstraints(&n->together, &n->separated);
+    std::chrono::time_point<std::chrono::system_clock> start, end;
     
     IloNumArray *pi; //pointer to dual variables
     double subResult;

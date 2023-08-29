@@ -57,15 +57,13 @@ double BnB(Instance *binPack){
         
         if(n->feasible = isFeasible(&n->solution)){
 
-            std::cout << "Entered:" << std::endl;
-
-            if(n->value <= UB){
+            if(n->value < UB){
 
                 UB = n->value;
             }
         }
-        else{
-                
+        else if(n->value < UB - 1){
+
             newNodeTogether = new Node(n);
             newNodeSeparated = new Node(n);
             fractionedPair = master->getMostFractional();

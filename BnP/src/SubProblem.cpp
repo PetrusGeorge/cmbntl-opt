@@ -43,7 +43,7 @@ SubProblem::~SubProblem(){
 
 double SubProblem::solve(){
 
-    //solver.setOut(env.getNullStream());
+    solver.setOut(env.getNullStream());
     solver.solve();
 
     return solver.getObjValue();
