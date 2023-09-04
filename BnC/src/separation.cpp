@@ -2,7 +2,7 @@
 
 typedef vector<int> super_node;
 
-pair<int,double> chooseBestMaxBack(vector<int> *s, int n, double **x){
+pair<int,double> chooseBestMaxBack(vector<int> *s, int n, double **x, vector<bool>& inS){
 
     int bestNode;
     double bestMaxBack = -1;//Ensure that it's lower than first maxBack
@@ -11,8 +11,7 @@ pair<int,double> chooseBestMaxBack(vector<int> *s, int n, double **x){
 
         double maxBack = 0;
 
-        if(find(s->begin(), s->end(), i) != s->end()){
-          
+        if(inS[i] == 1){
             continue;
         }
 
@@ -64,10 +63,20 @@ double calculatInitialMaxBackCutMin(int node, int n, double **x){
     return value;
 }
 
+void updateBool(vector<bool>&chosed, vector<int> Smin){
+
+    int n = Smin.size();
+
+    for(int i = 0; i < n; i++){
+        chosed[Smin[i]] = 1;
+    }
+}
+
 vector<vector<int>> MaxBack(double **x, int n){
 
     vector<vector<int>> result;
     bool cont;
+    vector<bool> alreadyChosed(n, 0);
 
     for(int i = 0; i < n; i++){
 
@@ -82,19 +91,7 @@ vector<vector<int>> MaxBack(double **x, int n){
 
     for(int i = 0; i < n; i++){
 
-        cont = false;
-
-        for(int j = 0; j < result.size(); j++){
-
-            if(find(result[j].begin(), result[j].end(), i) != result[j].end()){
-
-                cont = true;
-                continue;
-            }
-        }
-
-        if(cont){
-
+        if(alreadyChosed[i] == 1){
             continue;
         }
 
@@ -103,11 +100,16 @@ vector<vector<int>> MaxBack(double **x, int n){
         double cutMin = calculatInitialMaxBackCutMin(s[0], n, x);
         double cutVal = cutMin;
 
+        vector<bool> inS(n, 0);
+        inS[i] = 1;
+        alreadyChosed[i] = 1;
+
         while(s.size() < n){
 
-            pair<int,double> bestNode = chooseBestMaxBack(&s, n, x);
+            pair<int,double> bestNode = chooseBestMaxBack(&s, n, x, inS);
 
             s.push_back(bestNode.first);
+            inS[bestNode.first] = 1;
             cutVal += 2 + - (bestNode.second * 2);
 
             if(cutVal < cutMin){
@@ -116,6 +118,8 @@ vector<vector<int>> MaxBack(double **x, int n){
                 sMin = s;
             }
         }
+
+        updateBool(alreadyChosed, sMin);
 
         if(sMin.size() != n){
             result.push_back(sMin);
