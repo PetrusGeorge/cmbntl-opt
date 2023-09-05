@@ -25,7 +25,7 @@ OBJS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SRCS))
 #############################
 
 #### regra principal, gera o executavel
-mlp: $(OBJS) 
+tsp: $(OBJS) 
 	@echo  "\033[31m \nLinking all objects files: \033[0m"
 	$(CPPC) $(BITS_OPTION) $(OBJS) -o $@ $(CCLNFLAGS)
 ############################
@@ -37,6 +37,7 @@ mlp: $(OBJS)
 #cada arquivo objeto depende do .c e dos headers (informacao dos header esta no arquivo de dependencias gerado pelo compiler)
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@echo  "\033[31m \nCompiling $<: \033[0m"
+	@mkdir -p obj
 	$(CPPC) $(CCFLAGS) -c $< -o $@
 	@echo  "\033[32m \ncreating $< dependency file: \033[0m"
 	$(CPPC) -std=c++0x  -MM $< > $(basename $@).d
@@ -47,7 +48,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 #delete objetos e arquivos de dependencia
 clean:
 	@echo "\033[31mcleaning obj directory \033[0m"
-	@rm mlp -f $(OBJDIR)/*.o $(OBJDIR)/*.d
+	@rm tsp -f $(OBJDIR)/*.o $(OBJDIR)/*.d
 
 
-rebuild: clean mlp
+rebuild: clean tsp

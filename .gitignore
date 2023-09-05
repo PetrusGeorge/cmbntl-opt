@@ -1,10 +1,7 @@
-GILS-RVND/TSP/tsp
-GILS-RVND/TSP/src/.vscode
-GILS-RVND/MLP/mlp
-GILS-RVND/MLP/src/.vscode
+obj/
+**/.vscode
+TSP/tsp
+MLP/mlp
 BnB/bnb
 BnC/bnc
-BnC/obj/*
 BnP/bnp
-BnP/obj/*
-.vscode

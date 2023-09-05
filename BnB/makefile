@@ -36,6 +36,7 @@ bnb: $(OBJS)
 #cada arquivo objeto depende do .c e dos headers (informacao dos header esta no arquivo de dependencias gerado pelo compiler)
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@echo  "\033[31m \nCompiling $<: \033[0m"
+	@mkdir -p obj
 	$(CPPC) $(CPPFLAGS) $(CCOPT) -c $< -o $@ -g
 	@echo  "\033[32m \ncreating $< dependency file: \033[0m"
 	$(CPPC) -std=c++0x  -MM $< > $(basename $@).d
@@ -46,7 +47,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 #delete objetos e arquivos de dependencia
 clean:
 	@echo "\033[31mcleaning obj directory \033[0m"
-	@rm tsp -f $(OBJDIR)/*.o $(OBJDIR)/*.d
+	@rm bnb -f $(OBJDIR)/*.o $(OBJDIR)/*.d
 
 
-rebuild: clean tsp
+rebuild: clean bnb
