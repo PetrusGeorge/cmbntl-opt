@@ -1,5 +1,6 @@
 #include "Data.h"
 
+using namespace std;
 
 //Inicializador
 Data::Data( int qtParam, char * instance ):

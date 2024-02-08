@@ -7,7 +7,7 @@
 #include <string>
 #include <fstream>
 #include <math.h>
-using namespace std;
+// using namespace std;
 
 class Data{
 public:
@@ -23,10 +23,10 @@ public:
 	inline double getYCoord(int i){return yCoord[i-1];}
 	inline bool getExplicitCoord(){return explicitCoord; };
 
-	string getInstanceName();                    //Get instance's name
+    std::string getInstanceName();                    //Get instance's name
 
 private:
-	string instaceName;
+    std::string instaceName;
 	int nbOfPar;
 
 	int dimension;
