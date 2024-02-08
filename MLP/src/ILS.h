@@ -23,10 +23,10 @@ typedef struct ConstructionNode{
 
 Solution Construction(Data& data, std::vector<ConstructionNode> cl);
 bool bestSwap(Solution *s, Data& data, std::vector<std::vector<Subsequence>>& subSequenceMatrix);
-bool bestOrOPT(Solution *s, int choice, Data& data, std::vector<std::vector<Subsequence>>& subSequenceMatrix);
+bool bestOrOPT(Solution *s, int blockSize, Data& data, std::vector<std::vector<Subsequence>>& subSequenceMatrix);
 bool best2Opt(Solution *s, Data& data, std::vector<std::vector<Subsequence>>& subSequenceMatrix);
 void LocalSearch(Solution *s, Data& data, std::vector<std::vector<Subsequence>>& subSequenceMatrix);
-void Pertubation(const Solution *s, Solution *receiver, Data& data);
+void Pertubation(const Solution *best, Solution *receiver, Data& data);
 Solution ILS(int maxIter, int maxIterILS, Data& data);
 
 #endif 

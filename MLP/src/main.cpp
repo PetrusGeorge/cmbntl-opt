@@ -25,9 +25,7 @@ int main(int argc, char** argv){
 
     for(int i = 0; i < 10; i++){
 
-        // vector<vector<Subsequence>> subSequenceMatrix(dimension + 1, vector<Subsequence>(dimension + 1));
         result = ILS(10, min(100, dimension), data);
-        // UpdateAllSubsequence(&result, subSequenceMatrix, data);
         sumCost += result.latency; 
     }
 

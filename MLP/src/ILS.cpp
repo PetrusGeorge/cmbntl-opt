@@ -1,4 +1,7 @@
 #include "ILS.h"
+#include "Structures.h"
+#include <algorithm>
+#include <bits/fs_fwd.h>
 
 using namespace std;
 
@@ -76,7 +79,7 @@ bool bestSwap(Solution *s, Data& data, vector<vector<Subsequence>>& subSequenceM
     return false;
 }
 
-bool bestOrOPT(Solution *s, int choice, Data& data, vector<vector<Subsequence>>& subSequenceMatrix){
+bool bestOrOPT(Solution *s, int blockSize, Data& data, vector<vector<Subsequence>>& subSequenceMatrix){
 
     int bestA, bestB;
     int size = s->sequence.size();
@@ -84,191 +87,55 @@ bool bestOrOPT(Solution *s, int choice, Data& data, vector<vector<Subsequence>>&
 
     Subsequence sigma1, sigma2, sigma3;
 
-    if(choice == 1){
-        
-        for(int i = 1; i < size - 2; i++){
-          
-            for(int j = 0; j < size - 1; j++){
-                
-                if(i - j <= 1 && i - j >= 0){ 
-                  
-                    continue;  
-                }
-
-                if(i > j){
-
-                    sigma1 = Subsequence::Concatenate(subSequenceMatrix[0][j], subSequenceMatrix[i][i], data);
-                    sigma2 = Subsequence::Concatenate(sigma1, subSequenceMatrix[j + 1][i - 1], data);
-                    sigma3 = Subsequence::Concatenate(sigma2, subSequenceMatrix[i + 1][size - 1], data);
-                }
-                
-                else{
-
-                    sigma1 = Subsequence::Concatenate(subSequenceMatrix[0][i - 1], subSequenceMatrix[i + 1][j], data);
-                    sigma2 = Subsequence::Concatenate(sigma1, subSequenceMatrix[i][i], data);
-                    sigma3 = Subsequence::Concatenate(sigma2, subSequenceMatrix[j + 1][size - 1], data);
-                    
-                }
-
-                if(sigma3.C < bestLatency){
-
-                    bestLatency = sigma3.C;
-                    bestA = i;
-                    bestB = j;
-                }
-            }
-        }
-        
-
-        if(bestLatency < s->latency){
-
-            if(bestA > bestB){
-       
-                s->sequence.insert(s->sequence.begin() + bestB + 1, s->sequence[bestA]);
-                s->sequence.erase(s->sequence.begin() + bestA + 1);
-
-                UpdateMoveSubsequence(s, subSequenceMatrix, data, bestB, bestA);
-            }
-
-            else{
-
-                s->sequence.insert(s->sequence.begin() + bestB + 1, s->sequence[bestA]);
-                s->sequence.erase(s->sequence.begin() + bestA);
-                
-                UpdateMoveSubsequence(s, subSequenceMatrix, data, bestA, bestB);
-            }
-
-            return true;
-        }
-
-    }
-    
-
-    else if(choice == 2){
-
-        for(int i = 1; i < size - 3; i++){
-
-            for(int j = 0; j < size - 1; j++){
-
-                if(i - j <= 1 && i - j >= -1){ 
-                  
-                    continue;  
-                }
-
-                if(i > j){
-
-                    sigma1 = Subsequence::Concatenate(subSequenceMatrix[0][j], subSequenceMatrix[i + 1][i], data);
-                    sigma2 = Subsequence::Concatenate(sigma1, subSequenceMatrix[j + 1][i - 1], data);
-                    sigma3 = Subsequence::Concatenate(sigma2, subSequenceMatrix[i + 2][size - 1], data);
-                }
-
-                else{
-
-                    sigma1 = Subsequence::Concatenate(subSequenceMatrix[0][i - 1], subSequenceMatrix[i + 2][j], data);
-                    sigma2 = Subsequence::Concatenate(sigma1, subSequenceMatrix[i + 1][i], data);
-                    sigma3 = Subsequence::Concatenate(sigma2, subSequenceMatrix[j + 1][size - 1], data);
-                }
-
-                if(sigma3.C < bestLatency){
-
-                    bestLatency = sigma3.C;
-                    bestA = i;
-                    bestB = j;
-                }
-            }
-        }
-
-        if(bestLatency < s->latency){
+    for(int i = 1; i < size - blockSize - 1; i++){
+      
+        for(int j = 0; j < size - 1; j++){
             
-            if(bestA > bestB){
-             
-                s->sequence.insert(s->sequence.begin() + bestB + 1, s->sequence[bestA]);
-                s->sequence.insert(s->sequence.begin() + bestB + 1, s->sequence[bestA + 2]);
-                s->sequence.erase(s->sequence.begin() + bestA + 2);
-                s->sequence.erase(s->sequence.begin() + bestA + 2);
+            if(i - j <= 1 && i - j >= -(blockSize-1)){ 
+              
+                continue;  
+            }
 
-                UpdateMoveSubsequence(s, subSequenceMatrix, data, bestB, bestA + 1);
+            if(i > j){
+
+                sigma1 = Subsequence::Concatenate(subSequenceMatrix[0][j], subSequenceMatrix[i + blockSize - 1][i], data);
+                sigma2 = Subsequence::Concatenate(sigma1, subSequenceMatrix[j + 1][i - 1], data);
+                sigma3 = Subsequence::Concatenate(sigma2, subSequenceMatrix[i + blockSize][size - 1], data);
             }
             
             else{
 
-                s->sequence.insert(s->sequence.begin() + bestB + 1, s->sequence[bestA]);
-                s->sequence.insert(s->sequence.begin() + bestB + 1, s->sequence[bestA + 1]);
-                s->sequence.erase(s->sequence.begin() + bestA);
-                s->sequence.erase(s->sequence.begin() + bestA);
-                
-                UpdateMoveSubsequence(s, subSequenceMatrix, data, bestA, bestB + 1);
+                sigma1 = Subsequence::Concatenate(subSequenceMatrix[0][i - 1], subSequenceMatrix[i + blockSize][j], data);
+                sigma2 = Subsequence::Concatenate(sigma1, subSequenceMatrix[i + blockSize - 1][i], data);
+                sigma3 = Subsequence::Concatenate(sigma2, subSequenceMatrix[j + 1][size - 1], data);
             }
 
+            if(sigma3.C < bestLatency){
 
-            return true;
+                bestLatency = sigma3.C;
+                bestA = i;
+                bestB = j;
+            }
         }
-
     }
 
-    else if(choice == 3){
+    if(bestLatency < s->latency){
 
-        for(int i = 1; i < size - 4; i++){
-
-            for(int j = 0; j < size - 1; j++){
-                
-                if(i - j <= 2 && i - j >= -2){ 
-                  
-                    continue;  
-                }
-
-                if(i > j){
-
-                    sigma1 = Subsequence::Concatenate(subSequenceMatrix[0][j], subSequenceMatrix[i + 2][i], data);
-                    sigma2 = Subsequence::Concatenate(sigma1, subSequenceMatrix[j + 1][i - 1], data);
-                    sigma3 = Subsequence::Concatenate(sigma2, subSequenceMatrix[i + 3][size - 1], data);
-                }
-
-                else{
-                    
-                    sigma1 = Subsequence::Concatenate(subSequenceMatrix[0][i - 1], subSequenceMatrix[i + 3][j], data);
-                    sigma2 = Subsequence::Concatenate(sigma1, subSequenceMatrix[i + 2][i], data);
-                    sigma3 = Subsequence::Concatenate(sigma2, subSequenceMatrix[j + 1][size - 1], data);
-                }
-
-                if(sigma3.C < bestLatency){
-
-                    bestLatency = sigma3.C;
-                    bestA = i;
-                    bestB = j;
-                }
-            }
+        if(bestA > bestB){
+   
+            reverse(s->sequence.begin() + bestA, s->sequence.begin() + bestA + blockSize);
+            rotate(s->sequence.begin() + bestB + 1, s->sequence.begin() + bestA, s->sequence.begin() + bestA + blockSize);
+            UpdateMoveSubsequence(s, subSequenceMatrix, data, bestB, bestA + blockSize-1);
         }
 
-        if(bestLatency < s->latency){
+        else{
 
-            if(bestA > bestB){
-                
-                s->sequence.insert(s->sequence.begin() + bestB + 1, s->sequence[bestA]);
-                s->sequence.insert(s->sequence.begin() + bestB + 1, s->sequence[bestA + 2]);
-                s->sequence.insert(s->sequence.begin() + bestB + 1, s->sequence[bestA + 4]);
-                s->sequence.erase(s->sequence.begin() + bestA + 3);
-                s->sequence.erase(s->sequence.begin() + bestA + 3);
-                s->sequence.erase(s->sequence.begin() + bestA + 3);
-                
-                UpdateMoveSubsequence(s, subSequenceMatrix, data, bestB, bestA + 2);
-            }
-
-            else{
-
-                s->sequence.insert(s->sequence.begin() + bestB + 1, s->sequence[bestA]);
-                s->sequence.insert(s->sequence.begin() + bestB + 1, s->sequence[bestA + 1]);
-                s->sequence.insert(s->sequence.begin() + bestB + 1, s->sequence[bestA + 2]);
-                s->sequence.erase(s->sequence.begin() + bestA);
-                s->sequence.erase(s->sequence.begin() + bestA);
-                s->sequence.erase(s->sequence.begin() + bestA);    
-
-                UpdateMoveSubsequence(s, subSequenceMatrix, data, bestA - 1, bestB + 1);
-            }
-
-            return true;
+            reverse(s->sequence.begin() + bestA, s->sequence.begin() + bestA + blockSize);
+            rotate(s->sequence.begin() + bestA, s->sequence.begin() + bestA + blockSize, s->sequence.begin() + bestB + 1);
+            UpdateMoveSubsequence(s, subSequenceMatrix, data, bestA, bestB);
         }
 
+        return true;
     }
 
     return false;
@@ -354,9 +221,7 @@ void LocalSearch(Solution *s, Data& data, vector<vector<Subsequence>>& subSequen
         else{
             options.erase(options.begin() + n);
         }
-        
     }
-    
 }
 
 void Pertubation(const Solution *s, Solution *receiver, Data& data){
