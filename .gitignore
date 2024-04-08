@@ -1,5 +1,7 @@
 obj/
 **/.vscode
+**/obj
+**/bin
 TSP/tsp
 MLP/mlp
 BnB/bnb
